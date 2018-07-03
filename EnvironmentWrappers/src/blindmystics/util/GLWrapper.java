@@ -1,5 +1,6 @@
 package blindmystics.util;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
 import org.lwjgl.util.glu.GLU;
 
@@ -225,6 +226,13 @@ public class GLWrapper {
 
     public static void glUniform1f(int location, float v0) {
         GL20.glUniform1f(location, v0);
+    }
+
+    public static void glUniform1(int location, float[] v0) {
+        FloatBuffer floatBuff = BufferUtils.createFloatBuffer(v0.length);
+        floatBuff.put(v0);
+        floatBuff.flip();
+        GL20.glUniform1(location, floatBuff);
     }
 
     public static void glUniform2f(int location, float v0, float v1) {

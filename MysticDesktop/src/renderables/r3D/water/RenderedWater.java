@@ -56,6 +56,7 @@ public class RenderedWater extends LoadedObjectAbstract {
 
     private LoadedObjectHandler.LoadStatus currentStatus;
 
+    private float waterWaveTime = 0;
     private float waterWaveOffset = 0;
     private float waterRippleOffset = 0;
     private float rippleOffsetSpeed = 0.042f / 1000f;
@@ -72,6 +73,11 @@ public class RenderedWater extends LoadedObjectAbstract {
     private float waterWaveFrequency = 1f;
     private float distanceBetweenWaves = 5.0f;
     private boolean useSimpleWater = true;
+
+    private double[] seaStateAValues = new double[5];
+    private double[] seaStateWValues = new double[5];
+    private double[] seaStateThetaValues = new double[5];
+    private double[] seaStateKValues = new double[5];
 
     public void setWaterColour(Vector3f waterColour) {
         this.waterColour = waterColour;
@@ -117,6 +123,9 @@ public class RenderedWater extends LoadedObjectAbstract {
     }
 
     public void update(CurrentInput input, float delta) {
+
+        GenerateSeaStateValues();
+
         if (waveSettings == null) {
             waterWaveFrequency = 1f;
             waterWaveDirection = 0f;
@@ -136,12 +145,14 @@ public class RenderedWater extends LoadedObjectAbstract {
         //Period of a sin wave is 2*PI.
         float deltaModifier = (float) ((2 * Math.PI) / (1000 * waterWaveFrequency));
 
+        waterWaveTime += (delta / 1000.0f);
         waterWaveOffset += (delta * deltaModifier);
         waterRippleOffset += delta * rippleOffsetSpeed;
         waterFlippedCamera.updateCamera(delta, input);
     }
 
     public void render(Camera camera, PointLight light, FrameBufferObject frameBufferObjectToRenderTo){
+
         waterFlippedCamera.setWaterHeight(waterHeight);
         waterFlippedCamera.updateWithParentCamera(camera);
 
@@ -215,6 +226,11 @@ public class RenderedWater extends LoadedObjectAbstract {
         waterShader.setWaveStrength(waveStrength);
         waterShader.setWaterRoataion(waterRotation);
 
+
+        System.out.println("waterWaveTime = " + waterWaveTime);
+        waterShader.setWaterWaveTime(waterWaveTime);
+
+
         if (useSimpleWater) {
             Vector2f increasedTiling = new Vector2f(tiling);
             increasedTiling.scale(10);
@@ -232,7 +248,10 @@ public class RenderedWater extends LoadedObjectAbstract {
             flatModel.drawElements();
         }
 
-
+        waterShader.setSeaStateAValues((toFloatArray(seaStateAValues)));
+        waterShader.setSeaStateWValues((toFloatArray(seaStateWValues)));
+        waterShader.setSeaStateThetaValues((toFloatArray(seaStateThetaValues)));
+        waterShader.setSeaStateKValues((toFloatArray(seaStateKValues)));
 
         //GL13.glActiveTexture(GL13.GL_TEXTURE1);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
@@ -246,15 +265,72 @@ public class RenderedWater extends LoadedObjectAbstract {
 //        GL11.glDisable(GL11.GL_BLEND);
     }
 
+    private static float[] toFloatArray(double[] doubleArr){
+        float[] result = new float[doubleArr.length];
+        for (int i = 0; i < doubleArr.length; i++) {
+            result[i] = (float) doubleArr[i];
+        }
+        return result;
+    }
+
     public void destroy(){
         reflectionFBO.cleanUp();
     }
 
 
+    public void GenerateSeaStateValues(){
+        seaStateAValues = new double[]{
+                0.5 * (1.0 / 7.0),
+                0.5 * (0.8 / 6.0),
+                0.5 * (0.6 / 5.0),
+                0.5 * (0.4 / 4.0),
+                0.5 * (0.2 / 3.0)
+        };
+
+        seaStateWValues = new double[]{
+                1.10,
+                1.8,
+                1.7,
+                1.9,
+                1.11
+        };
+
+        seaStateThetaValues = new double[]{
+                (Math.PI * 0.51),
+                (Math.PI * 0.22),
+                (Math.PI * 0.31),
+                (Math.PI * 1.11),
+                (Math.PI * 1.25)
+        };
+
+        seaStateKValues = new double[]{
+                1.0,
+                0.8,
+                0.6,
+                0.4,
+                0.2
+        };
+    }
+
     public float getWaterHeight(float xPos, float zPos) {
-        float rotatedXPosition = (float) ((xPos * Math.cos(waterWaveDirection)) - (zPos * Math.sin(waterWaveDirection)));
+
+        GenerateSeaStateValues();
+
+        double waterHeight = 0f;
+
+        for(int i = 0; i < 5; i++){
+            waterHeight += seaStateAValues[i] * Math.cos((seaStateWValues[i] * waterWaveTime)
+                    + (seaStateKValues[i] * Math.cos(seaStateThetaValues[i])  * xPos)
+                    + (seaStateKValues[i] * Math.sin(seaStateThetaValues[i])  * zPos));
+        }
+
+        System.out.println("waterHeight = " + waterHeight);
+
+        return (float) waterHeight;
+
+        //float rotatedXPosition = (float) ((xPos * Math.cos(waterWaveDirection)) - (zPos * Math.sin(waterWaveDirection)));
         //TODO - Consider wave spacing.
-        return waterHeight + (float) (waterWaveHeight * Math.sin((rotatedXPosition / distanceBetweenWaves) + waterWaveOffset));
+        //return waterHeight + (float) (waterWaveHeight * Math.sin((rotatedXPosition / distanceBetweenWaves) + waterWaveOffset));
     }
 
     @Override

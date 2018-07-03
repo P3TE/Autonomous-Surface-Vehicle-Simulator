@@ -1,5 +1,6 @@
 package gebd.shaders.shaders.water;
 
+import blindmystics.util.GLWrapper;
 import composites.entities.Entity;
 import gebd.Render;
 import gebd.camera.Camera;
@@ -52,6 +53,11 @@ public class WaterShader extends Shader{
     protected int normalMapTextureLocation;
     protected int depthMapLocation;
 
+    protected int waterWaveTimeLocation;
+    protected int seaStateAValuesLocation;
+    protected int seaStateWValuesLocation;
+    protected int seaStateThetaValuesLocation;
+    protected int seaStateKValuesLocation;
 
     /**
      * Constructor
@@ -159,6 +165,12 @@ public class WaterShader extends Shader{
         dudvMapTextureLocation = getUniformLocation("dudvMapTexture");
         normalMapTextureLocation = getUniformLocation("normalMapTexture");
         depthMapLocation = getUniformLocation("depthMap");
+
+        waterWaveTimeLocation = getUniformLocation("waterWaveTime");
+        seaStateAValuesLocation = getUniformLocation("seaStateAValues");
+        seaStateWValuesLocation = getUniformLocation("seaStateWValues");
+        seaStateThetaValuesLocation = getUniformLocation("seaStateThetaValues");
+        seaStateKValuesLocation = getUniformLocation("seaStateKValues");
     }
 
     @Override
@@ -275,5 +287,24 @@ public class WaterShader extends Shader{
         loadFloat(lightStrengthLocation, light.getLuminosity());
     }
 
+    public void setWaterWaveTime(float waterWaveTime){
+        loadFloat(waterWaveTimeLocation, waterWaveTime);
+    }
+
+    public void setSeaStateAValues(float[] seaStateAValues){
+        GLWrapper.glUniform1(seaStateAValuesLocation, seaStateAValues);
+    }
+
+    public void setSeaStateWValues(float[] seaStateWValues){
+        GLWrapper.glUniform1(seaStateWValuesLocation, seaStateWValues);
+    }
+
+    public void setSeaStateThetaValues(float[] seaStateThetaValues){
+        GLWrapper.glUniform1(seaStateThetaValuesLocation, seaStateThetaValues);
+    }
+
+    public void setSeaStateKValues(float[] seaStateKValues){
+        GLWrapper.glUniform1(seaStateKValuesLocation, seaStateKValues);
+    }
 
 }
