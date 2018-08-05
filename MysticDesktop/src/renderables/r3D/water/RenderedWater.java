@@ -100,9 +100,13 @@ public class RenderedWater extends LoadedObjectAbstract {
         this.simpleFlatModel = simpleFlatModel;
         this.render = render;
         this.waterFlippedCamera = new WaterFlippedCamera();
-        reflectionFBO = new FrameBufferObject(waterResolutionWidth, waterResolutionHeight);
-        //Create the FBO is a depth texture attachment instead of a depth buffer.
-        refractionFBO = new FrameBufferObject(waterResolutionWidth, waterResolutionHeight, true);
+        if((waterResolutionHeight <= 0) || (waterResolutionWidth <= 0)){
+            System.out.println("WARNING: invalid resolution for framebuffer.");
+        } else {
+            reflectionFBO = new FrameBufferObject(waterResolutionWidth, waterResolutionHeight);
+            //Create the FBO is a depth texture attachment instead of a depth buffer.
+            refractionFBO = new FrameBufferObject(waterResolutionWidth, waterResolutionHeight, true);
+        }
     }
 
     public Vector2f getWaterQuadSize() {
@@ -227,7 +231,7 @@ public class RenderedWater extends LoadedObjectAbstract {
         waterShader.setWaterRoataion(waterRotation);
 
 
-        System.out.println("waterWaveTime = " + waterWaveTime);
+        //System.out.println("waterWaveTime = " + waterWaveTime);
         waterShader.setWaterWaveTime(waterWaveTime);
 
 
@@ -279,12 +283,20 @@ public class RenderedWater extends LoadedObjectAbstract {
 
 
     public void GenerateSeaStateValues(){
+//        seaStateAValues = new double[]{
+//                1.5 * (1.0 / 7.0),
+//                1.5 * (0.8 / 6.0),
+//                1.5 * (0.6 / 5.0),
+//                1.5 * (0.4 / 4.0),
+//                1.5 * (0.2 / 3.0)
+//        };
+
         seaStateAValues = new double[]{
-                0.5 * (1.0 / 7.0),
-                0.5 * (0.8 / 6.0),
-                0.5 * (0.6 / 5.0),
-                0.5 * (0.4 / 4.0),
-                0.5 * (0.2 / 3.0)
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
         };
 
         seaStateWValues = new double[]{
@@ -324,7 +336,7 @@ public class RenderedWater extends LoadedObjectAbstract {
                     + (seaStateKValues[i] * Math.sin(seaStateThetaValues[i])  * zPos));
         }
 
-        System.out.println("waterHeight = " + waterHeight);
+        //System.out.println("waterHeight = " + waterHeight);
 
         return (float) waterHeight;
 

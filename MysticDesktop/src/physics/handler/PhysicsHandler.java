@@ -81,8 +81,13 @@ public abstract class PhysicsHandler {
         float ms = getDeltaTimeMicroseconds();
         float timeStep = ms / 1000000f;
         timeStep *= timestepMultiplier;
+        updatePhysicsSingleStep(timeStep);
+    }
+
+    public void updatePhysicsSingleStep(float timestep) {
+        // simple dynamics world doesn't handle fixed-time-stepping
         if (dynamicsWorld != null && physicsRunning) {
-            dynamicsWorld.stepSimulation(timeStep);
+            dynamicsWorld.stepSimulation(timestep);
         }
     }
 
