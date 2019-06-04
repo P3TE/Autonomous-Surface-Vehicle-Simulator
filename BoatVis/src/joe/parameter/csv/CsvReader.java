@@ -14,8 +14,10 @@ public class CsvReader {
 
     protected ArrayList<String> headers = null;
     protected ArrayList<ArrayList<String>> values = new ArrayList<>();
+    private File csvFile;
 
     public CsvReader(File fileToRead){
+        this.csvFile = fileToRead;
 
         BufferedReader br = null;
         String line = "";
@@ -67,5 +69,25 @@ public class CsvReader {
         return values.get(0).size();
     }
 
+    public File getCsvFile() {
+        return csvFile;
+    }
+
+    public String getFilePathWithNameAppend(String appendedName){
+        String directoryPath = getCsvFile().getParentFile().getPath();
+        String fileName = getCsvFile().getName();
+        String extension = "";
+        String justTheName = "";
+        for(int i = 0; i < fileName.length(); i++){
+            int indexFromEnd = fileName.length() - (i + 1);
+            char c = fileName.charAt(indexFromEnd);
+            if(c == '.'){
+                extension = fileName.substring(indexFromEnd + 1, fileName.length());
+                justTheName = fileName.substring(0, indexFromEnd);
+            }
+        }
+
+        return directoryPath + "/" + justTheName + appendedName + "." + extension;
+    }
 }
 

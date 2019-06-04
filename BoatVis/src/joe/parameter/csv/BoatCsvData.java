@@ -1,6 +1,9 @@
 package joe.parameter.csv;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -36,6 +39,49 @@ public class BoatCsvData extends CsvReader {
                 data[x][y] = convertedValue;
             }
         }
+
+    }
+
+    //Write out
+
+    public void writeToFile(String filePath) throws IOException {
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, false));
+
+        for(int i = 0; i < headers.size(); i++){
+            if(i != 0){
+                writer.append(",");
+            }
+            String header = headers.get(i);
+            writer.append(header);
+        }
+        writer.append(",");
+        for(int i = 0; i < headers.size(); i++){
+            if(i != 0){
+                writer.append(",");
+            }
+            String header = headers.get(i);
+            writer.append("sim_");
+            writer.append(header);
+        }
+        writer.append("\n");
+
+        for(int y = 0 ; y < dataHeight(); y++){
+            for (int x = 0; x < dataWidth(); x++) {
+                writer.append("" + data[x][y]);
+                writer.append(",");
+            }
+            for (int x = 0; x < dataWidth(); x++) {
+                writer.append("" + simulatorData[x][y]);
+                if(x == (dataWidth() - 1)){
+                    writer.append("\n");
+                } else {
+                    writer.append(",");
+                }
+            }
+        }
+
+        writer.close();
 
     }
 
@@ -93,44 +139,44 @@ public class BoatCsvData extends CsvReader {
 
     //Quality Metrics:
 
-    public static float getMean(float[] values){
-        float total = 0f;
+    public static double getMean(float[] values){
+        double total = 0f;
         for(int i = 0; i < values.length; i++) {
             total += values[i];
         }
-        total /= ((float) values.length);
+        total /= ((double) values.length);
         return total;
     }
 
-    public static float getSsTot(float[] values){
-        float mean = getMean(values);
+    public static double getSsTot(float[] values){
+        double mean = getMean(values);
 
-        float sstot = 0f;
+        double sstot = 0f;
         for(int i = 0; i < values.length; i++) {
-            float valNotSquared = (values[i] - mean);
-            float valSquared = valNotSquared * valNotSquared;
+            double valNotSquared = (values[i] - mean);
+            double valSquared = valNotSquared * valNotSquared;
             sstot += valSquared;
         }
 
         return sstot;
     }
 
-    public static float getSsRes(float[] values, float[] fnValues){
+    public static double getSsRes(float[] values, float[] fnValues){
 
-        float ssRes = 0f;
+        double ssRes = 0f;
         for(int i = 0; i < values.length; i++) {
-            float valNotSquared = (values[i] - fnValues[i]);
-            float valSquared = valNotSquared * valNotSquared;
+            double valNotSquared = (values[i] - fnValues[i]);
+            double valSquared = valNotSquared * valNotSquared;
             ssRes += valSquared;
         }
 
         return ssRes;
     }
 
-    public static float getRSquared(float[] values, float[] fnValues){
-        float sstot = getSsTot(values);
-        float ssres = getSsRes(values, fnValues);
-        float r2 = 1.0f - (ssres / sstot);
+    public static double getRSquared(float[] values, float[] fnValues){
+        double sstot = getSsTot(values);
+        double ssres = getSsRes(values, fnValues);
+        double r2 = 1.0f - (ssres / sstot);
         return r2;
     }
 }

@@ -4,14 +4,12 @@ import composites.entities.Entity;
 import gebd.camera.Camera;
 import gebd.concurrent.DestoryableThread;
 import gebd.concurrent.ThreadDestroyer;
-import renderables.View;
-import sun.awt.Mutex;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by p3te on 7/11/16.
@@ -21,18 +19,19 @@ public class TransparentEntitySorter implements DestoryableThread {
     public static TransparentEntitySorter instance = new TransparentEntitySorter();
 
     private Semaphore waitingSemaphore = new Semaphore(0);
-    private Mutex completionMutex = new Mutex();
+    private Lock completionMutex = new ReentrantLock();
     private Camera currentCamera = null;
     private ArrayList<Entity> transparentEntites;
     private volatile boolean running = true;
     private final Thread thisThread;
 
-    public TransparentEntitySorter(){
+    public TransparentEntitySorter() {
         this.thisThread = ThreadDestroyer.registerAndStartDestroyableThread(this);
     }
 
     /**
      * Queues the thread to update the current view.
+     *
      * @param camera
      */
     public static void startConcurrentOrdering(Camera camera, ArrayList<Entity> transparentEntites) {
@@ -68,7 +67,7 @@ public class TransparentEntitySorter implements DestoryableThread {
     /**
      * Order all objects from furthest to closest.
      */
-    private void performOrderOperation(){
+    private void performOrderOperation() {
 
         ClosestEntityComparitor closestEntityComparitor = new ClosestEntityComparitor(currentCamera);
         Collections.sort(transparentEntites, closestEntityComparitor);
@@ -79,7 +78,7 @@ public class TransparentEntitySorter implements DestoryableThread {
      * Wait on a mutex (Doesn't require a context switch) for
      * the ordering to complete.
      */
-    public static void waitForSortingToComplete(){
+    public static void waitForSortingToComplete() {
         //Lock, IE - Wait for the other thread to unlock it.
         instance.completionMutex.lock();
 

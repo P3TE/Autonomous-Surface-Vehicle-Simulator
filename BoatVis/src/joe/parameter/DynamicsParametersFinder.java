@@ -10,6 +10,7 @@ import renderables.r3D.water.RenderedWater;
 
 import javax.vecmath.*;
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by CaptainPete on 8/5/2018.
@@ -31,37 +32,60 @@ public class DynamicsParametersFinder {
     private DynamicsParametersFinder(){
         String path = "res/data_example.csv";
 
+
+//        String pathLinear1 = "res/run3_from6s.csv";
+//        String pathLinear2 = "res/run4_from11s.csv";
+//        String pathAngular1 = "res/turn.csv";
+
+        String pathpercent_20 = "res/speed_20_percent.csv";
+        String pathpercent_40 = "res/speed_40_percent.csv";
+        String pathpercent_60 = "res/speed_60_percent.csv";
+        String pathpercent_80 = "res/speed_80_percent.csv";
+        String pathpercent100 = "res/speed_100_percent.csv";
+
         File csvFile = new File(path);
 
-        BoatCsvData boatCsvDataLinear = new BoatCsvData(csvFile);
-        BoatCsvData boatCsvDataAngular = new BoatCsvData(csvFile);
+//        BoatCsvData boatCsvDataLinear1 = new BoatCsvData(new File(pathLinear1));
+//        BoatCsvData boatCsvDataLinear2 = new BoatCsvData(new File(pathLinear2));
+//        BoatCsvData boatCsvDataAngular1 = new BoatCsvData(new File(pathAngular1));
+        BoatCsvData boatCsvDataAngular_20 = new BoatCsvData(new File(pathpercent_20));
+        BoatCsvData boatCsvDataAngular_40 = new BoatCsvData(new File(pathpercent_40));
+        BoatCsvData boatCsvDataAngular_60 = new BoatCsvData(new File(pathpercent_60));
+        BoatCsvData boatCsvDataAngular_80 = new BoatCsvData(new File(pathpercent_80));
+        BoatCsvData boatCsvDataAngular100 = new BoatCsvData(new File(pathpercent100));
 
         this.water = new RenderedWater(null, null, null, null, null, -1, -1);
 
-        float min_forwardThrustForceMultiplier = 0f;
-        float min_backwardThrustForceMultiplier = 0f;
-        float min_linearDamping = 0.0f;
-        float min_angularDamping = 0.0f;
+        float min_forwardThrustForceMultiplier = 80.0f;
+        float min_backwardThrustForceMultiplier = 67.5f;
+        float min_linearDamping = 0.2f;
+        float min_angularDamping = 0.55f;
 
-        float max_forwardThrustForceMultiplier = 300f;
-        float max_backwardThrustForceMultiplier = 300f;
-        float max_linearDamping = 1.0f;
-        float max_angularDamping = 1.0f;
+        float max_forwardThrustForceMultiplier = min_forwardThrustForceMultiplier;
+        float max_backwardThrustForceMultiplier = min_backwardThrustForceMultiplier;
+        float max_linearDamping = min_linearDamping;
+        float max_angularDamping = min_angularDamping;
 
-        float step_forwardThrustForceMultiplier = 90f;
-        float step_backwardThrustForceMultiplier = 90f;
-        float step_linearDamping = 0.25f;
-        float step_angularDamping = 0.25f;
+//        float max_forwardThrustForceMultiplier = 90.0f;
+//        float max_backwardThrustForceMultiplier = 75.0f;
+//        float max_linearDamping = 0.3f;
+//        float max_angularDamping = 0.65f;
+
+        float step_forwardThrustForceMultiplier = 2.5f;
+        float step_backwardThrustForceMultiplier = 2.5f;
+        float step_linearDamping = 0.05f;
+        float step_angularDamping = 0.05f;
 
         float best_forwardThrustForceMultiplier = 100f;
         float best_backwardThrustForceMultiplier = 80f;
         float best_linearDamping = 0.3f;
         float best_angularDamping = 0.5f;
 
-        float bestQualityMeasurement = 0f;
+        double bestQualityMeasurement = Double.POSITIVE_INFINITY;
 
-        float r2linearAtBest = 0f;
-        float r2angularAtBest = 0f;
+        double best_sumSquaredErrorLinear1 = 0f;
+        double best_sumSquaredErrorLinear2 = 0f;
+        double best_sumSquaredErrorAngular1 = 0f;
         //performTest(boatCsvDataAngular);
 
 
@@ -81,18 +105,32 @@ public class DynamicsParametersFinder {
                     System.out.print(".");
                     for(float curr_angularDamping = min_angularDamping; curr_angularDamping <= max_angularDamping; curr_angularDamping += step_angularDamping){
 
-                        performTest(boatCsvDataLinear, curr_forwardThrustForceMultiplier, curr_backwardThrustForceMultiplier, curr_linearDamping, curr_angularDamping);
-                        performTest(boatCsvDataAngular, curr_forwardThrustForceMultiplier, curr_backwardThrustForceMultiplier, curr_linearDamping, curr_angularDamping);
+//                        performTest(boatCsvDataLinear1, curr_forwardThrustForceMultiplier, curr_backwardThrustForceMultiplier, curr_linearDamping, curr_angularDamping);
+//                        performTest(boatCsvDataLinear2, curr_forwardThrustForceMultiplier, curr_backwardThrustForceMultiplier, curr_linearDamping, curr_angularDamping);
+//                        performTest(boatCsvDataAngular1, curr_forwardThrustForceMultiplier, curr_backwardThrustForceMultiplier, curr_linearDamping, curr_angularDamping);
 
-                        float r2linear = boatCsvDataLinear.getRSquared(boatCsvDataLinear.getSpeeds(), boatCsvDataLinear.getSimSpeeds());
-                        float r2angular = boatCsvDataLinear.getRSquared(boatCsvDataAngular.getHeadingRates(), boatCsvDataAngular.getHeadingRates());
+                        performTest(boatCsvDataAngular_20, curr_forwardThrustForceMultiplier, curr_backwardThrustForceMultiplier, curr_linearDamping, curr_angularDamping);
+                        performTest(boatCsvDataAngular_40, curr_forwardThrustForceMultiplier, curr_backwardThrustForceMultiplier, curr_linearDamping, curr_angularDamping);
+                        performTest(boatCsvDataAngular_60, curr_forwardThrustForceMultiplier, curr_backwardThrustForceMultiplier, curr_linearDamping, curr_angularDamping);
+                        performTest(boatCsvDataAngular_80, curr_forwardThrustForceMultiplier, curr_backwardThrustForceMultiplier, curr_linearDamping, curr_angularDamping);
+                        performTest(boatCsvDataAngular100, curr_forwardThrustForceMultiplier, curr_backwardThrustForceMultiplier, curr_linearDamping, curr_angularDamping);
 
-                        float qualityMeasurement = r2linear * r2angular;
+//                        float r2linear1 = boatCsvDataLinear1.getRSquared(boatCsvDataLinear1.getSpeeds(), boatCsvDataLinear1.getSimSpeeds());
+//                        float r2linear2 = boatCsvDataLinear2.getRSquared(boatCsvDataLinear2.getSpeeds(), boatCsvDataLinear2.getSimSpeeds());
+//                        float r2angular1 = boatCsvDataAngular1.getRSquared(boatCsvDataAngular1.getHeadingRates(), boatCsvDataAngular1.getHeadingRates());
 
-                        if(qualityMeasurement > bestQualityMeasurement){
+//                        double sumSquaredErrorLinear1 = boatCsvDataLinear1.getSsRes(boatCsvDataLinear1.getSpeeds(), boatCsvDataLinear1.getSimSpeeds());
+//                        double sumSquaredErrorLinear2 = boatCsvDataLinear2.getSsRes(boatCsvDataLinear2.getSpeeds(), boatCsvDataLinear2.getSimSpeeds());
+//                        double sumSquaredErrorAngular1 = boatCsvDataLinear2.getSsRes(boatCsvDataAngular1.getHeadingRates(), boatCsvDataAngular1.getSimHeadingRates());
+
+//                        double qualityMeasurement = sumSquaredErrorLinear1 * sumSquaredErrorLinear2 * sumSquaredErrorAngular1;
+                        double qualityMeasurement = 1111111111111.0;
+
+                        if(qualityMeasurement < bestQualityMeasurement){
                             bestQualityMeasurement = qualityMeasurement;
-                            r2linearAtBest = r2linear;
-                            r2angularAtBest = r2angular;
+//                            best_sumSquaredErrorLinear1  = sumSquaredErrorLinear1;
+//                            best_sumSquaredErrorLinear2  = sumSquaredErrorLinear2;
+//                            best_sumSquaredErrorAngular1 = sumSquaredErrorAngular1;
 
                             best_forwardThrustForceMultiplier = curr_forwardThrustForceMultiplier;
                             best_backwardThrustForceMultiplier = curr_backwardThrustForceMultiplier;
@@ -105,8 +143,9 @@ public class DynamicsParametersFinder {
             }
 
             System.out.println("bestQualityMeasurement = " + bestQualityMeasurement);
-            System.out.println("r2linearAtBest = " + r2linearAtBest);
-            System.out.println("r2angularAtBest = " + r2angularAtBest);
+            System.out.println("best_sumSquaredErrorLinear1  = " + best_sumSquaredErrorLinear1 );
+            System.out.println("best_sumSquaredErrorLinear2  = " + best_sumSquaredErrorLinear2 );
+            System.out.println("best_sumSquaredErrorAngular1 = " + best_sumSquaredErrorAngular1);
             System.out.println("best_forwardThrustForceMultiplier = " + best_forwardThrustForceMultiplier);
             System.out.println("best_backwardThrustForceMultiplier = " + best_backwardThrustForceMultiplier);
             System.out.println("best_linearDamping = " + best_linearDamping);
@@ -118,13 +157,28 @@ public class DynamicsParametersFinder {
         System.out.println();
 
         System.out.println("bestQualityMeasurement = " + bestQualityMeasurement);
-        System.out.println("r2linearAtBest = " + r2linearAtBest);
-        System.out.println("r2angularAtBest = " + r2angularAtBest);
+        System.out.println("best_sumSquaredErrorLinear1  = " + best_sumSquaredErrorLinear1 );
+        System.out.println("best_sumSquaredErrorLinear2  = " + best_sumSquaredErrorLinear2 );
+        System.out.println("best_sumSquaredErrorAngular1 = " + best_sumSquaredErrorAngular1);
         System.out.println("best_forwardThrustForceMultiplier = " + best_forwardThrustForceMultiplier);
         System.out.println("best_backwardThrustForceMultiplier = " + best_backwardThrustForceMultiplier);
         System.out.println("best_linearDamping = " + best_linearDamping);
         System.out.println("best_angularDamping = " + best_angularDamping);
 
+
+        try {
+            boatCsvDataAngular_20.writeToFile(boatCsvDataAngular_20.getFilePathWithNameAppend("_sim"));
+            boatCsvDataAngular_40.writeToFile(boatCsvDataAngular_40.getFilePathWithNameAppend("_sim"));
+            boatCsvDataAngular_60.writeToFile(boatCsvDataAngular_60.getFilePathWithNameAppend("_sim"));
+            boatCsvDataAngular_80.writeToFile(boatCsvDataAngular_80.getFilePathWithNameAppend("_sim"));
+            boatCsvDataAngular100.writeToFile(boatCsvDataAngular100.getFilePathWithNameAppend("_sim"));
+            //TODO - Verify that this isn't going to BERK anything.
+//            boatCsvDataLinear1.writeToFile(boatCsvDataLinear1.getFilePathWithNameAppend("_sim"));
+//            boatCsvDataLinear2.writeToFile(boatCsvDataLinear2.getFilePathWithNameAppend("_sim"));
+//            boatCsvDataAngular1.writeToFile(boatCsvDataAngular1.getFilePathWithNameAppend("_sim"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         System.out.println("100.00% Complete...");
     }
@@ -186,8 +240,8 @@ public class DynamicsParametersFinder {
             float currentLeftPercentage = boatCsvData.getLeftMotorPercentages()[csvIndex];
             float currentRightPercentage = boatCsvData.getRightMotorPercentages()[csvIndex];
 
-            isloatedPhysics.getWamV().applyConstantMotorForceOnLeftPontoon(currentLeftPercentage);
-            isloatedPhysics.getWamV().applyConstantMotorForceOnRightPontoon(currentRightPercentage);
+            isloatedPhysics.getWamV().applyConstantMotorForceOnLeftPontoon(currentLeftPercentage / 100.0f);
+            isloatedPhysics.getWamV().applyConstantMotorForceOnRightPontoon(currentRightPercentage / 100.0f);
 
             timer += PHYSICS_TIMESTEP;
             timeBetweenDataPoint += PHYSICS_TIMESTEP;
@@ -217,6 +271,12 @@ public class DynamicsParametersFinder {
 
                 float previousAngleDeg = (float) Math.toDegrees(previousXyzRotation.x);
                 float angleDifference = currentHeadingAngle - previousAngleDeg;
+                while (angleDifference < -180.0f){
+                    angleDifference += 360.0f;
+                }
+                while (angleDifference > 180.0f){
+                    angleDifference -= 360.0f;
+                }
                 float headingRate = angleDifference / timeBetweenDataPoint;
                 previousXyzRotation = new Vector3f(currentXyzRotation);
 
@@ -225,6 +285,9 @@ public class DynamicsParametersFinder {
                 boatCsvData.getSimSpeeds()[csvIndex + 1] = averageVelocity;
                 boatCsvData.getSimHeadings()[csvIndex + 1] = currentHeadingAngle;
                 boatCsvData.getSimHeadingRates()[csvIndex + 1] = headingRate;
+//                System.out.println("realHeadingRate = " + boatCsvData.getHeadingRates()[csvIndex + 1]);
+//                System.out.println("simHeadingRate = " + boatCsvData.getSimHeadingRates()[csvIndex + 1]);
+//                System.out.println("---");
                 boatCsvData.getSimLeftMotorPercentages()[csvIndex + 1] = currentLeftPercentage;
                 boatCsvData.getSimRightMotorPercentages()[csvIndex + 1] = currentRightPercentage;
 
