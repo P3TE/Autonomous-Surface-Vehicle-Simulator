@@ -5,3 +5,5 @@ The Autonomous Surface Vehicle Simulator was developed for, and used by, the Que
 
 
 ![Alt text](BoatVis/res/screenshots/SimulatorDisplayOfComponents.png?raw=true "A display of some simulator features")
+
+For building - it is recommended that you use Java version 8 or later.
